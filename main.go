@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -20,37 +21,42 @@ func main() {
 	if err != nil {
 		log.Fatalln("Cannot connect to MYSQL: ", err)
 	}
+
 	log.Println("Connected: ", db)
 
 	router := gin.Default()
 
 	v1 := router.Group("/v1")
 	{
-		restaurant := v1.Group("/restaurants")
-		restaurant.POST("/restaurants", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"ok": 1})
-		})
-		// v1.POST("/items", createItem(db))           // create item
-		// v1.GET("/items", getListOfItems(db))        // list items
-		// v1.GET("/items/:id", readItemById(db))      // get an item by ID
-		// v1.PUT("/items/:id", editItemById(db))      // edit an item by ID
-		// v1.DELETE("/items/:id", deleteItemById(db)) // delete an item by ID
+		restaurants := v1.Group("/restaurants")
+		{
+			restaurants.POST("", createRestaurant(db))
+			restaurants.GET("/:restaurant-id", getRestaurant(db))
+			restaurants.GET("", getListRestaurant(db))
+			restaurants.PUT("/:restaurant-id", updateRestaurant(db))
+			restaurants.DELETE("/:restaurant-id", deleteRestaurant(db))
+		}
 	}
 
 	router.Run(":3003") //default 8080
 
 }
 
+//--- có 3 struct
+//1. main struct (business struct)
+//- struct này không dùng cho update đc, vì string ko update chuỗi rỗng đc, nên dùng struct có con trỏ
 type Restaurant struct {
-	Id   int    `json:"id" gorm:"column:id;"`
+	Id   int    `json:"id" gorm:"column:id;"` //tag
 	Name string `json:"name" gorm:"column:name;"`
 	Addr string `json:"address" gorm:"column:addr;"`
 }
 
+// khi truy vấn data thì dùng bảng khai báo này để biết bảng nào
 func (Restaurant) TableName() string {
 	return "restaurants"
 }
 
+// 2.truct thao tác data với db, dùng con trỏ cho update chuỗi rỗng
 type RestaurantUpdate struct {
 	Name *string `json:"name" gorm:"column:name;"`
 	Addr *string `json:"address" gorm:"column:addr;"`
@@ -60,8 +66,10 @@ func (RestaurantUpdate) TableName() string {
 	return Restaurant{}.TableName()
 }
 
+// 3.truct thao tác data với db
+// struct chỉ lấy những field cần thiết
 type RestaurantCreate struct {
-	Id   int    `json:"id" gorm:"column:id;"`
+	Id   int    `json:"id" gorm:"column:id;"` // id = "-" không nhận params id từ client lên
 	Name string `json:"name" gorm:"column:name;"`
 	Addr string `json:"address" gorm:"column:addr;"`
 }
@@ -70,7 +78,9 @@ func (RestaurantCreate) TableName() string {
 	return Restaurant{}.TableName()
 }
 
+//validate
 func (res *RestaurantCreate) Validate() error {
+	res.Id = 0 //set giá trị id client truyền lên
 	res.Name = strings.TrimSpace(res.Name)
 
 	if len(res.Name) == 0 {
@@ -78,4 +88,140 @@ func (res *RestaurantCreate) Validate() error {
 	}
 
 	return nil
+}
+
+//vieestn hàm create riêng
+func createRestaurant(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//c.JSON(http.StatusOK, gin.H{"ok": 1})
+		var data RestaurantCreate
+		if err := c.ShouldBind(&data); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//validate
+		if err := data.Validate(); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// insert db
+		if err := db.Create(&data).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"data": data.Id})
+	}
+
+}
+
+func getRestaurant(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//c.JSON(http.StatusOK, gin.H{"ok": 1})
+		var data Restaurant
+
+		id, err := strconv.Atoi(c.Param("restaurant-id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := db.Where("id = ?", id).First(&data).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"data": data})
+	}
+
+}
+
+func getListRestaurant(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//c.JSON(http.StatusOK, gin.H{"ok": 1})
+		type DataPaging struct {
+			Page  int   `json:"page" form:"page"`
+			Limit int   `json:"limit" form:"limit"`
+			Total int64 `json:"total" form:"-"`
+		}
+
+		var paging DataPaging
+
+		if err := c.ShouldBind(&paging); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if paging.Page <= 0 {
+			paging.Page = 1
+		}
+
+		if paging.Limit <= 0 {
+			paging.Limit = 5
+		}
+
+		offset := (paging.Page - 1) * paging.Limit
+
+		var result []Restaurant
+		if err := db.Table(Restaurant{}.TableName()).
+			Count(&paging.Total).
+			Offset(offset).
+			Limit(paging.Limit).
+			Order("id desc").
+			Find(&result).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"paging": paging, "data": result})
+	}
+
+}
+
+func updateRestaurant(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//c.JSON(http.StatusOK, gin.H{"ok": 1})
+		var data RestaurantUpdate
+
+		id, err := strconv.Atoi(c.Param("restaurant-id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := c.ShouldBind(&data); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := db.Where("id = ?", id).Updates(&data).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"data": true})
+	}
+
+}
+
+func deleteRestaurant(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//c.JSON(http.StatusOK, gin.H{"ok": 1})
+
+		id, err := strconv.Atoi(c.Param("restaurant-id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := db.Table(Restaurant{}.TableName()).Where("id = ?", id).Delete(nil).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"data": true})
+	}
+
 }
