@@ -138,6 +138,7 @@ func getRestaurant(db *gorm.DB) gin.HandlerFunc {
 
 }
 
+//hello architecture
 func getListRestaurant(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//c.JSON(http.StatusOK, gin.H{"ok": 1})
