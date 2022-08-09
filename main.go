@@ -28,7 +28,7 @@ func main() {
 		restaurants := v1.Group("/restaurants")
 		{
 			restaurants.POST("", restaurantgin.CreateRestaurantHandler(db))
-			// restaurants.GET("/:restaurant-id", getRestaurant(db))
+			restaurants.GET("/:restaurant-id", restaurantgin.GetRestaurantHandler(db))
 			// restaurants.GET("", getListRestaurant(db))
 			// restaurants.PUT("/:restaurant-id", updateRestaurant(db))
 			// restaurants.DELETE("/:restaurant-id", deleteRestaurant(db))
@@ -38,27 +38,6 @@ func main() {
 	router.Run(":3003") //default 8080
 
 }
-
-// func getRestaurant(db *gorm.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		//c.JSON(http.StatusOK, gin.H{"ok": 1})
-// 		var data Restaurant
-
-// 		id, err := strconv.Atoi(c.Param("restaurant-id"))
-// 		if err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		if err := db.Where("id = ?", id).First(&data).Error; err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		c.JSON(http.StatusOK, gin.H{"data": data})
-// 	}
-
-// }
 
 // // hello architecture
 // func getListRestaurant(db *gorm.DB) gin.HandlerFunc {
