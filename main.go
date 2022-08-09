@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"os"
+
 	"strconv"
 	"strings"
 
@@ -14,8 +14,8 @@ import (
 )
 
 func main() {
-	dsn := os.Getenv("MYSQL_CONNECTION")
-	//dsn := "food_delivery:19e5a718a54a9fe0559dfbce6908@tcp(127.0.0.1:3306)/food_delivery?charset=utf8mb4&parseTime=True&loc=Local"
+	//dsn := os.Getenv("MYSQL_CONNECTION")
+	dsn := "food_delivery:19e5a718a54a9fe0559dfbce6908@tcp(127.0.0.1:3306)/food_delivery?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
