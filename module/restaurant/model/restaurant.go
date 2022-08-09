@@ -2,6 +2,7 @@ package restaurantmodel
 
 import (
 	"errors"
+	"food-delivery-service/common"
 	"strings"
 )
 
@@ -9,7 +10,7 @@ import (
 // 1. main struct (business struct)
 // - struct này không dùng cho update đc, vì string ko update chuỗi rỗng đc, nên dùng struct có con trỏ
 type Restaurant struct {
-	Id      int    `json:"id" gorm:"column:id;"` //tag
+	common.SQLModel
 	OwnerId int    `json:"owner_id" gorm:"column:owner_id;"`
 	Name    string `json:"name" gorm:"column:name;"`
 	Addr    string `json:"address" gorm:"column:addr;"`
