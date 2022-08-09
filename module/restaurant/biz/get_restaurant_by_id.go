@@ -13,7 +13,7 @@ type FindRestaurantStore interface {
 	) (*restaurantmodel.Restaurant, error)
 }
 
-func NeFindRestaurantBiz(store FindRestaurantStore) *findRestaurantBiz {
+func NewFindRestaurantBiz(store FindRestaurantStore) *findRestaurantBiz {
 	return &findRestaurantBiz{store: store}
 }
 

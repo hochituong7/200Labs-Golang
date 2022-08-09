@@ -10,23 +10,24 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
+func DeleteRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		id, err := strconv.Atoi(c.Param("restaurant-id"))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
 		storage := restaurantstorage.NewSQLStore(db)
-		biz := restaurantbiz.NewFindRestaurantBiz(storage)
+		biz := restaurantbiz.NewDeleteRestaurantBiz(storage)
 
-		data, err := biz.FindRestaurantById(c.Request.Context(), id)
-
-		if err != nil {
+		if err := biz.DeleteRestaurantById(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"data": data})
+
+		c.JSON(http.StatusOK, gin.H{"data": true})
 
 	}
 

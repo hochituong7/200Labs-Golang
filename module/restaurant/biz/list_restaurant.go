@@ -16,7 +16,7 @@ type ListRestaurantStore interface {
 	) ([]restaurantmodel.Restaurant, error)
 }
 
-func NewListRetaurant(store ListRestaurantStore) *listRestaurantBiz {
+func NewListRetaurantBiz(store ListRestaurantStore) *listRestaurantBiz {
 	return &listRestaurantBiz{store: store}
 }
 

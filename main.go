@@ -29,101 +29,12 @@ func main() {
 		{
 			restaurants.POST("", restaurantgin.CreateRestaurantHandler(db))
 			restaurants.GET("/:restaurant-id", restaurantgin.GetRestaurantHandler(db))
-			// restaurants.GET("", getListRestaurant(db))
-			// restaurants.PUT("/:restaurant-id", updateRestaurant(db))
-			// restaurants.DELETE("/:restaurant-id", deleteRestaurant(db))
+			restaurants.GET("", restaurantgin.ListRestaurant(db))
+			restaurants.PUT("/:restaurant-id", restaurantgin.UpdateRestaurantHandler(db))
+			restaurants.DELETE("/:restaurant-id", restaurantgin.DeleteRestaurantHandler(db))
 		}
 	}
 
 	router.Run(":3003") //default 8080
 
 }
-
-// // hello architecture
-// func getListRestaurant(db *gorm.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		//c.JSON(http.StatusOK, gin.H{"ok": 1})
-// 		type DataPaging struct {
-// 			Page  int   `json:"page" form:"page"`
-// 			Limit int   `json:"limit" form:"limit"`
-// 			Total int64 `json:"total" form:"-"`
-// 		}
-
-// 		var paging DataPaging
-
-// 		if err := c.ShouldBind(&paging); err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		if paging.Page <= 0 {
-// 			paging.Page = 1
-// 		}
-
-// 		if paging.Limit <= 0 {
-// 			paging.Limit = 5
-// 		}
-
-// 		offset := (paging.Page - 1) * paging.Limit
-
-// 		var result []Restaurant
-// 		if err := db.Table(Restaurant{}.TableName()).
-// 			Count(&paging.Total).
-// 			Offset(offset).
-// 			Limit(paging.Limit).
-// 			Order("id desc").
-// 			Find(&result).Error; err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		c.JSON(http.StatusOK, gin.H{"paging": paging, "data": result})
-// 	}
-
-// }
-
-// func updateRestaurant(db *gorm.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		//c.JSON(http.StatusOK, gin.H{"ok": 1})
-// 		var data RestaurantUpdate
-
-// 		id, err := strconv.Atoi(c.Param("restaurant-id"))
-// 		if err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		if err := c.ShouldBind(&data); err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		if err := db.Where("id = ?", id).Updates(&data).Error; err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		c.JSON(http.StatusOK, gin.H{"data": true})
-// 	}
-
-// }
-
-// func deleteRestaurant(db *gorm.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		//c.JSON(http.StatusOK, gin.H{"ok": 1})
-
-// 		id, err := strconv.Atoi(c.Param("restaurant-id"))
-// 		if err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		if err := db.Table(Restaurant{}.TableName()).Where("id = ?", id).Delete(nil).Error; err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
-
-// 		c.JSON(http.StatusOK, gin.H{"data": true})
-// 	}
-
-// }

@@ -9,9 +9,10 @@ import (
 // 1. main struct (business struct)
 // - struct này không dùng cho update đc, vì string ko update chuỗi rỗng đc, nên dùng struct có con trỏ
 type Restaurant struct {
-	Id   int    `json:"id" gorm:"column:id;"` //tag
-	Name string `json:"name" gorm:"column:name;"`
-	Addr string `json:"address" gorm:"column:addr;"`
+	Id      int    `json:"id" gorm:"column:id;"` //tag
+	OwnerId int    `json:"owner_id" gorm:"column:owner_id;"`
+	Name    string `json:"name" gorm:"column:name;"`
+	Addr    string `json:"address" gorm:"column:addr;"`
 }
 
 // khi truy vấn data thì dùng bảng khai báo này để biết bảng nào
