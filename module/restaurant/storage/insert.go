@@ -2,6 +2,7 @@ package restaurantstorage
 
 import (
 	"context"
+	"food-delivery-service/common"
 	restaurantmodel "food-delivery-service/module/restaurant/model"
 )
 
@@ -9,7 +10,7 @@ import (
 func (store *sqlStore) InsertRestaurant(ctx context.Context, data *restaurantmodel.RestaurantCreate) error {
 
 	if err := store.db.Create(data).Error; err != nil {
-		return err
+		return common.ErrDB(err)
 
 	}
 	return nil

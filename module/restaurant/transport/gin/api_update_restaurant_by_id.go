@@ -1,6 +1,7 @@
 package restaurantgin
 
 import (
+	"food-delivery-service/common"
 	restaurantbiz "food-delivery-service/module/restaurant/biz"
 	restaurantmodel "food-delivery-service/module/restaurant/model"
 	restaurantstorage "food-delivery-service/module/restaurant/storage"
@@ -17,12 +18,12 @@ func UpdateRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 		var data restaurantmodel.RestaurantUpdate
 		id, err := strconv.Atoi(c.Param("restaurant-id"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
 			return
 		}
 		//parse data
 		if err := c.ShouldBind(&data); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
 			return
 		}
 
@@ -30,11 +31,11 @@ func UpdateRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 		biz := restaurantbiz.NewUpdateRestaurantBiz(storage)
 
 		if err := biz.UpdateRestaurantById(c.Request.Context(), id, &data); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, err)
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"data": true})
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
 
 	}
 

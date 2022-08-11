@@ -26,7 +26,7 @@ func (store sqlStore) ListRestaurant(
 		Limit(paging.Limit).
 		Order("id desc").
 		Find(&result).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 
 	return result, nil

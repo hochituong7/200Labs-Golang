@@ -1,10 +1,11 @@
 package restaurantmodel
 
 import (
-	"errors"
 	"food-delivery-service/common"
 	"strings"
 )
+
+const EntityName = "Restaurant"
 
 // --- có 3 struct
 // 1. main struct (business struct)
@@ -49,7 +50,7 @@ func (res *RestaurantCreate) Validate() error {
 	res.Name = strings.TrimSpace(res.Name)
 
 	if len(res.Name) == 0 {
-		return errors.New("restaurant name can't be blank")
+		return ErrNameCannotBeBlank
 	}
 
 	return nil

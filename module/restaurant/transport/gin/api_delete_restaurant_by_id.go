@@ -1,6 +1,7 @@
 package restaurantgin
 
 import (
+	"food-delivery-service/common"
 	restaurantbiz "food-delivery-service/module/restaurant/biz"
 	restaurantstorage "food-delivery-service/module/restaurant/storage"
 	"net/http"
@@ -15,7 +16,7 @@ func DeleteRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 
 		id, err := strconv.Atoi(c.Param("restaurant-id"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
 			return
 		}
 
@@ -27,7 +28,7 @@ func DeleteRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"data": true})
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
 
 	}
 

@@ -1,6 +1,7 @@
 package restaurantgin
 
 import (
+	"food-delivery-service/common"
 	restaurantbiz "food-delivery-service/module/restaurant/biz"
 	restaurantstorage "food-delivery-service/module/restaurant/storage"
 	"net/http"
@@ -14,7 +15,7 @@ func GetRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("restaurant-id"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
 			return
 		}
 		storage := restaurantstorage.NewSQLStore(db)
@@ -26,7 +27,7 @@ func GetRestaurantHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"data": data})
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data))
 
 	}
 
