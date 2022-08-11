@@ -27,10 +27,36 @@ version: '2'
 services:
   app:
     build: .
-    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    command: bundle exec rails s -version: '2'
+services:
+  app:
+    build: .
+    command: bundle exec rails s -p 3003 -b '0.0.0.0'
     volumes:
       - .:/todos-app
     ports:
-      - "3000:3000"
+      - "3000:3003"
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+  sqlite3:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./db/:/root/db/
+    ports:
+      - '9000:9000'
+            
+networks:
+  app-network:
+    driver: bridge
   
 
