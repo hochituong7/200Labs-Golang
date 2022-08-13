@@ -14,6 +14,13 @@ import (
 func ListRestaurant(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// go func() {
+		// 	defer common.Recover() //nếu mở go func thì nên để thêm hàm recover tránh bị crash
+
+		// 	var arr []int
+		// 	fmt.Println(arr[0])
+		// }()
+
 		var paging common.Paging
 		if err := c.ShouldBind(&paging); err != nil {
 			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
