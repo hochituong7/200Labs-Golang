@@ -1,10 +1,11 @@
 package restaurantmodel
 
 import (
-	"errors"
 	"food-delivery-service/common"
 	"strings"
 )
+
+const EntityName = "Restaurant"
 
 // --- có 3 struct
 // 1. main struct (business struct)
@@ -14,6 +15,10 @@ type Restaurant struct {
 	OwnerId int    `json:"owner_id" gorm:"column:owner_id;"`
 	Name    string `json:"name" gorm:"column:name;"`
 	Addr    string `json:"address" gorm:"column:addr;"`
+}
+
+func (r *Restaurant) Mask(isAdminOwner bool) {
+	r.SQLModel.Mask(common.DbTypeRestaurant)
 }
 
 // khi truy vấn data thì dùng bảng khai báo này để biết bảng nào
@@ -34,7 +39,8 @@ func (RestaurantUpdate) TableName() string {
 // 3.truct thao tác data với db
 // struct chỉ lấy những field cần thiết
 type RestaurantCreate struct {
-	Id   int    `json:"id" gorm:"column:id;"` // id = "-" không nhận params id từ client lên
+	common.SQLModel
+	//Id   int    `json:"id" gorm:"column:id;"` // id = "-" không nhận params id từ client lên
 	Name string `json:"name" gorm:"column:name;"`
 	Addr string `json:"address" gorm:"column:addr;"`
 }
@@ -49,7 +55,7 @@ func (res *RestaurantCreate) Validate() error {
 	res.Name = strings.TrimSpace(res.Name)
 
 	if len(res.Name) == 0 {
-		return errors.New("restaurant name can't be blank")
+		return ErrNameCannotBeBlank
 	}
 
 	return nil

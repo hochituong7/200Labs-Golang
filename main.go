@@ -3,7 +3,8 @@ package main
 import (
 	"log"
 
-	restaurantgin "food-delivery-service/module/restaurant/transport/gin"
+	"food-delivery-service/components"
+	"food-delivery-service/middleware"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -22,19 +23,10 @@ func main() {
 	log.Println("Connected: ", db)
 
 	router := gin.Default()
+	router.Use(middleware.Recover()) //show ra các lỗi khi bị crash, nếu ko có thì ko show gì (500 internal error with postman)
+	appCtx := components.NewAppContext(db)
 
-	v1 := router.Group("/v1")
-	{
-		restaurants := v1.Group("/restaurants")
-		{
-			restaurants.POST("", restaurantgin.CreateRestaurantHandler(db))
-			restaurants.GET("/:restaurant-id", restaurantgin.GetRestaurantHandler(db))
-			restaurants.GET("", restaurantgin.ListRestaurant(db))
-			restaurants.PUT("/:restaurant-id", restaurantgin.UpdateRestaurantHandler(db))
-			restaurants.DELETE("/:restaurant-id", restaurantgin.DeleteRestaurantHandler(db))
-		}
-	}
-
+	mainRoute(router, appCtx)
 	router.Run(":3003") //default 8080
 
 }
