@@ -9,6 +9,7 @@ import (
 // Implement InsertRestaurant in class create_restaurent biz
 func (store *sqlStore) InsertRestaurant(ctx context.Context, data *restaurantmodel.RestaurantCreate) error {
 
+	data.PrepareForInsert()
 	if err := store.db.Create(data).Error; err != nil {
 		return common.ErrDB(err)
 

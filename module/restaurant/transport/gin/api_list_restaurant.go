@@ -2,16 +2,16 @@ package restaurantgin
 
 import (
 	"food-delivery-service/common"
+	"food-delivery-service/components"
 	restaurantbiz "food-delivery-service/module/restaurant/biz"
 	restaurantmodel "food-delivery-service/module/restaurant/model"
 	restaurantstorage "food-delivery-service/module/restaurant/storage"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func ListRestaurant(db *gorm.DB) gin.HandlerFunc {
+func ListRestaurant(appCtx components.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// go func() {
@@ -23,8 +23,9 @@ func ListRestaurant(db *gorm.DB) gin.HandlerFunc {
 
 		var paging common.Paging
 		if err := c.ShouldBind(&paging); err != nil {
-			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
-			return
+			// c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
+			// return
+			panic(err)
 		}
 
 		var filter restaurantmodel.Filter
@@ -34,7 +35,7 @@ func ListRestaurant(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		_ = paging.Validate()
-		store := restaurantstorage.NewSQLStore(db)
+		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewListRetaurantBiz(store)
 		result, err := biz.ListRestaurant(c.Request.Context(), &filter, &paging)
 
@@ -42,6 +43,11 @@ func ListRestaurant(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		for i := range result {
+			result[i].Mask(true)
+		}
+
 		c.JSON(http.StatusOK, common.NewSuccessResponse(result, paging, filter))
 	}
 
